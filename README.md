@@ -14,12 +14,11 @@ https://de.mathworks.com/matlabcentral/fileexchange/27960-resampling-statistical
 
 3. Next, you’ll have to modify some Fieldtrip functions. Note that the line numbers given below might be slightly different in your Fieldtrip version. 
 In ft_statistics_montecarlo:
+   * around line 120 (where the defaults for the main function are set), add the following line to set the default effect of interest to be the interaction: 
+            cfg.fac = ft_getopt(cfg, 'fac','iaxb');
 
-    * around line 120 (where the defaults for the main function are set), add the following line to set the default effect of interest to be the interaction: 
-cfg.fac = ft_getopt(cfg, 'fac','iaxb');
-
-    * starting at line 213, replace the assignment 
-            resample = resampledesign(cfg, design);
+   * starting at line 213, replace the assignment 
+                        resample = resampledesign(cfg, design);
       with
 
         if isfield(cfg,'resample') 
@@ -28,23 +27,21 @@ cfg.fac = ft_getopt(cfg, 'fac','iaxb');
            resample = resampledesign(cfg, design); 
         end
 
-This will allow you to use some pre-computed, more complex permutation matrices (not necessary for an independent 2-way ANOVA, but e.g. for group x condition interactions in a mixed design) 
+    This will allow you to use some pre-computed, more complex permutation matrices (not necessary for an independent 2-way  ANOVA, but e.g. for group x condition interactions in a mixed design) 
 
-    * at approximately line 229 add
- 
-tmpcfg.fac = cfg.fac; 
+    * at approximately line 229 add 'tmpcfg.fac = cfg.fac;'
+    This configuration struct field will be used to indicate the factor or interaction of interest. This can be 'a' (first factor), 'b' (second factor) or 'iaxb' for the interaction
 
-This configuration struct field will be used to indicate the factor or interaction of interest. This can be 'a' (first factor), 'b' (second factor) or 'iaxb' for the interaction
-
-In resampledesign (in the private folder of your Fieldtrip version) change line 130 from 
+  In resampledesign (in the private folder of your Fieldtrip version) change line 130 from 
 
         resample = cat(2, blockres{:}); 
-        to 
+     to 
+        
         resample(:,cat(2, blocksel{:})) = cat(2, blockres{:}); 
 
-See the following bug note: http://bugzilla.fcdonders.nl/show_bug.cgi?id=1546
+  See the following bug note: http://bugzilla.fcdonders.nl/show_bug.cgi?id=1546
 
-Now your Fieldtrip version is set up and ready to run permutation ANOVAs.
+  Now your Fieldtrip version is set up and ready to run permutation ANOVAs.
 
 
 ## Example: 2-way balanced independent ANOVA
