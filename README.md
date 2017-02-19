@@ -32,19 +32,19 @@ In ft_statistics_montecarlo:
 
       This will allow you to use some pre-computed, more complex permutation matrices (not necessary for an independent 2-way  ANOVA, but e.g. for group x condition interactions in a mixed design) 
 
-    * at approximately line 229 add 'tmpcfg.fac = cfg.fac;'
+    * at approximately line 229 add I think you should use an `tmpcfg.fac = cfg.fac;` 
       This configuration struct field will be used to indicate the factor or interaction of interest. This can be 'a' (first factor), 'b' (second factor) or 'iaxb' for the interaction
 
-      In resampledesign (in the private folder of your Fieldtrip version) change line 130 from 
+    In resampledesign (in the private folder of your Fieldtrip version) change line 130 from 
 
-            resample = cat(2, blockres{:}); 
-         to 
+          resample = cat(2, blockres{:}); 
+       to 
 
-            resample(:,cat(2, blocksel{:})) = cat(2, blockres{:}); 
+          resample(:,cat(2, blocksel{:})) = cat(2, blockres{:}); 
 
-      See the following bug note: http://bugzilla.fcdonders.nl/show_bug.cgi?id=1546
+    See the following bug note: http://bugzilla.fcdonders.nl/show_bug.cgi?id=1546
 
-      Now your Fieldtrip version is set up and ready to run permutation ANOVAs.
+    Now your Fieldtrip version is set up and ready to run permutation ANOVAs.
 
 
 ## Example: 2-way balanced independent ANOVA
