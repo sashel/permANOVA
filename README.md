@@ -14,7 +14,7 @@ https://de.mathworks.com/matlabcentral/fileexchange/27960-resampling-statistical
 
 3. Next, you’ll have to modify some Fieldtrip functions. Note that the line numbers given below might be slightly different in your Fieldtrip version. 
 In ft_statistics_montecarlo:
-   * around line 120 (where the defaults for the main function are set), add the following line to set the default effect of interest to be the interaction: 
+    * around line 120 (where the defaults for the main function are set), add the following line to set the default effect of interest to be the interaction: 
    
             cfg.fac = ft_getopt(cfg, 'fac','iaxb');
 
@@ -35,16 +35,29 @@ In ft_statistics_montecarlo:
     * at approximately line 229 add I think you should use an `tmpcfg.fac = cfg.fac;` 
       This configuration struct field will be used to indicate the factor or interaction of interest. This can be 'a' (first factor), 'b' (second factor) or 'iaxb' for the interaction
 
-    In resampledesign (in the private folder of your Fieldtrip version) change line 130 from 
+    In resampledesign (in the private folder of your Fieldtrip version):
+    * change line 130 from 
 
           resample = cat(2, blockres{:}); 
-       to 
+
+      to
 
           resample(:,cat(2, blocksel{:})) = cat(2, blockres{:}); 
+          
+      See the following bug note: http://bugzilla.fcdonders.nl/show_bug.cgi?id=1546
+          
+    * At about line 160 replace 
+    
+          error('the design matrix variables should be constant within a block');
+          
+      with
+      
+          warning('Fieldtrip:checkinput','the design matrix variables should be constant within a block');
+          [lastmsg, wvar_warnid] = lastwarn;
+          warning('off', wvar_warnid)
+  
 
-    See the following bug note: http://bugzilla.fcdonders.nl/show_bug.cgi?id=1546
-
-    Now your Fieldtrip version is set up and ready to run permutation ANOVAs.
+  Now your Fieldtrip version is set up and ready to run permutation ANOVAs.
 
 
 ## Example: 2-way balanced independent ANOVA
