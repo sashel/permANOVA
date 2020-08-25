@@ -1,8 +1,7 @@
 function [s,cfg] = ft_statfun_indepAnova2way(cfg, dat, design)
 
 % FT_STATFUN_INDEPANOVA2WAY calculates the independent samples 2-way ANOVA
-% F-statistic(s)
-% on the biological data in dat (the dependent variable), using the information on
+% F-statistic(s) on the biological data in dat (the dependent variable), using the information on
 % the independent variables (iv) in design.
 %
 % Use this function by calling one of the high-level statistics functions as:
@@ -38,15 +37,7 @@ function [s,cfg] = ft_statfun_indepAnova2way(cfg, dat, design)
 %   cfg.ivar        = row number(s) of the design that contain(s) the labels of the conditions that must be
 %                     compared (default= [1,2]). The labels range from 1 to the number of conditions.
 
-% Adapted by Saskia Helbling from Eric Maris' statfun_depsamplesT
-% Independent two-way ANOVA is calculated by means of the function
-% ANOVA2_CELL_MOD based on ANOVA2_CELL from the Resampling statistical toolkit by Arnaud Delorme 
-% http://www.mathworks.com/matlabcentral/fileexchange/27960-resampling-statistical-toolkit/content/statistics/anova2_cell.m
-% published under the GNU General Public License as published by
-% the Free Software Foundation; either version 2 of the License, or
-% (at your option) any later version.
-
-% Subversion does not use the Log keyword, use 'svn log <filename>' or 'svn -v log | less' to get detailled information
+% Adapted by Saskia Helbling from Eric Maris' statfun_depsamplesT in the Fieldtrip toolbox
 
 % set the defaults
 if ~isfield(cfg, 'computestat'),       cfg.computestat='yes';     end;
@@ -63,68 +54,29 @@ if isfield(cfg,'uvar') && ~isempty(cfg.uvar)
     error('cfg.uvar should not exist for an independent samples statistic');
 end
 
-% only balanced 2-way factorial ANOVA for now
-ncond_a = length(unique(design(cfg.ivar(1),:)));
-ncond_b = length(unique(design(cfg.ivar(2),:)));
-
-ncond = ncond_a*ncond_b;
-nrepl=zeros(ncond_a,ncond_b);
-
-for condindx_a=1:ncond_a
-    for condindx_b=1:ncond_b
-        nrepl(condindx_a,condindx_b)=nrepl(condindx_a,condindx_b)+length(find(design(cfg.ivar(1),:)==condindx_a& design(cfg.ivar(2),:)==condindx_b));
-    end
-end;
-if min(nrepl)~=max(nrepl)
-    error('Use only balanced designs for 2-way (or higher order) ANOVA!'); % this condition might be relaxed n the future
-end
-
-if sum(sum(nrepl))<size(design,2)
-    error('Invalid specification of the independent variable in the design array.');
-end;
-if sum(sum(nrepl))<=ncond
-    error('The must be more trials/subjects than levels of the independent variable.');
-end;
-
 nsmpls = size(dat,1);
-
-%% degrees of freedom
-dfA = ncond_a-1;
-dfB = ncond_b-1; 
-dfAB =(ncond_a-1)*(ncond_b-1); 
-dfErr = ncond_a*ncond_b*(nrepl(1)-1);
-
-    dfa  = [dfA dfErr];
-    dfb  = [dfB dfErr];
-    dfi =  [dfAB dfErr];
-
 
 %% compute the statistic
 if strcmp(cfg.computestat, 'yes')
     % compute the statistic
     s.stat=zeros(nsmpls,1);
-    for nfac_a = 1:ncond_a
-        for nfac_b = 1:ncond_b
-            idx_ab = design(cfg.ivar(1),:) == nfac_a & design(cfg.ivar(2),:) == nfac_b;
-            anovaIn{nfac_a,nfac_b} = dat(:,idx_ab);
-        end
-    end
 
-    [FA, FB, FI] = anova2_cell_mod(anovaIn);
+    [p,tbl,stats,terms] = anovan(dat, {design(1,:),design(2,:)},'model',2,'display','off');
 
     switch cfg.fac
         case 'a'
-            s.stat=FA;
+            s.stat=tbl{2,6};
         case 'b'
-            s.stat=FB;
+            s.stat=tbl{3,6};
         case 'iaxb'
-            s.stat=FI;
+            s.stat=tbl{4,6};
     end
 end
 
 %% compute the critical value
 if strcmp(cfg.computecritval,'yes')
     % also compute the critical values
+ [p,tbl,stats,terms] = anovan(dat, {design(1,:),design(2,:)},'model',2,'display','off');
 
     if cfg.tail==-1
         error('For an independent samples F-statistic, it does not make sense to calculate a left tail critical value.');
@@ -135,11 +87,11 @@ if strcmp(cfg.computecritval,'yes')
     if cfg.tail==1
         switch cfg.fac
             case 'a'
-                s.critval = finv(1-cfg.alpha, dfa(1), dfa(2));
+                s.critval = finv(1-cfg.alpha, tbl{2,3}, tbl{5,3});
             case 'b'
-                s.critval = finv(1-cfg.alpha, dfb(1), dfb(2));
+                s.critval = finv(1-cfg.alpha, tbl{3,3}, tbl{5,3});
             case 'iaxb'
-                s.critval = finv(1-cfg.alpha, dfi(1), dfi(2));
+                s.critval = finv(1-cfg.alpha, tbl{4,3}, tbl{5,3});
         end
     end;
 end
@@ -158,12 +110,11 @@ if strcmp(cfg.computeprob,'yes')
         
         switch cfg.fac
             case 'a'
-                s.prob = 1 - fcdf(s.stat, dfa(1), dfa(2));
+                s.prob = 1 - fcdf(s.stat, tbl{2,3}, tbl{5,3});
             case 'b'
-                s.prob = 1 - fcdf(s.stat, dfb(1), dfb(2));
+                s.prob = 1 - fcdf(s.stat, tbl{3,3}, tbl{5,3});
             case 'iaxb'
-                s.prob = 1 - fcdf(s.stat, dfi(1), dfi(2));
+                s.prob = 1 - fcdf(s.stat, tbl{4,3}, tbl{5,3});
         end
     end;
 end
-
