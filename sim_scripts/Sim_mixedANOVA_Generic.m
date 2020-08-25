@@ -177,7 +177,7 @@ for ee = 1:length(Error_List)
                         c = X(1,:);
                         design = X(2:end,:);
                         exact = 'unres';
-                        statfun = 'mixed_1b_1w';
+                        statfun = 'mixedAnova_1b_1w';
                         stat = FtSimLink_mixed_1b_1w_ANOVA(data,neighbours,c,design,statfun,fac,exact);
                         res(j) = stat.prob;
                         
@@ -253,7 +253,7 @@ for ee = 1:length(Error_List)
                         
                         
                         exact = 'unres';
-                        statfun = 'mixed_1b_1w';
+                        statfun = 'mixedANOVA_1b_1w';
                         stat = FtSimLink_mixed_1b_1w_ANOVA(data,neighbours,c_new,design,statfun,fac,exact);
                         res(j) = stat.prob;
                         
@@ -261,7 +261,7 @@ for ee = 1:length(Error_List)
                         c = X(1,:);
                         design = X(2:end,:);
                         exact = 'totunres';
-                        statfun = 'mixed_1b_1w';
+                        statfun = 'mixedANOVA_1b_1w';
                         % permutation ANOVA is called here
                         stat = FtSimLink_mixed_1b_1w_ANOVA(data,neighbours,c,design,statfun,fac,exact);
                         res(j) = stat.prob;
@@ -270,7 +270,7 @@ for ee = 1:length(Error_List)
                         c = X(1,:);
                         design = X(2:end,:);
                         exact = 'yes';
-                        statfun = 'mixed_1b_1w';
+                        statfun = 'mixedANOVA_1b_1w';
                         stat = FtSimLink_mixed_1b_1w_ANOVA(data,neighbours,c,design,statfun,fac,exact);
                         res(j) = stat.prob;
                 end
@@ -324,8 +324,7 @@ for ee = 1:length(Error_List)
         cd(resDir)
         save(saveStr,'param','p_val','A*','B*','sc','method','res')
         clear param p_val c
-        cd(stemFolder)
-        
+        cd(stemFolder)  
     end
 end
 
