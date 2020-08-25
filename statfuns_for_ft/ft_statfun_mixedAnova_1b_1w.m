@@ -1,7 +1,7 @@
-function [s,cfg] = ft_statfun_mixed_1b_1w(cfg, dat, design)
+function [s,cfg] = ft_statfun_mixedAnova_1b_1w(cfg, dat, design)
 
-% STATFUN_mixedEff_1b_1w_fast calculates the F-statistic for a mixed design
-% with one within subjects an done between subjet variable
+% FT_STATFUN_MIXEDANOVA_1B_1W calculates the F-statistic for a mixed design
+% with one within subjects and one between subjects variable
 % on the biological data in dat (the dependent variable), using the information on
 % the independent variables (iv) on the subjects indicated by uvar in the design matrix.
 %
@@ -10,11 +10,11 @@ function [s,cfg] = ft_statfun_mixed_1b_1w(cfg, dat, design)
 %   [stat] = ft_freqstatistics(cfg, freq1, freq2, ...)
 %   [stat] = ft_sourcestatistics(cfg, source1, source2, ...)
 % with the following configuration option:
-%   cfg.statistic = 'mixedEff_1b_1w_fast'
+%   cfg.statistic = 'mixedEff_1b_1w'
 % see FT_TIMELOCKSTATISTICS, FT_FREQSTATISTICS or FT_SOURCESTATISTICS for details.
 %
 % For low-level use, the external interface of this function has to be
-%   [s,cfg] = statfun_indepsamplesF(cfg, dat, design);
+%   [s,cfg] = ft_statfun_mixedEff_1b_1w(cfg, dat, design);
 % where
 %   dat    contains the biological data, Nsamples x Nreplications
 %   design contains the independent variables (iv),  Nfac x Nreplications &
@@ -38,11 +38,23 @@ function [s,cfg] = ft_statfun_mixed_1b_1w(cfg, dat, design)
 % Design specification:
 %   cfg.ivar        = row number of the design that contains the labels of the conditions that must be
 %                        compared (default=1). The labels range from 1 to the number of conditions.
-%
 
-% Copyright (C) 2006, Eric Maris, adapted by S. Helbling
-%
-% Subversion does not use the Log keyword, use 'svn log <filename>' or 'svn -v log | less' to get detailled information
+%   cfg.uvar        = row number of design that contains the labels of the UOs (subjects or trials)
+%                     (default=3). The labels are assumed to be integers ranging from 1 to 
+%                     the number of UOs.
+%   or cfg.war      = row number of design that contains the labels of the UOs (subjects or trials)
+%                     (default=3), equal labels should be kept together. The labels are assumed to be integers ranging from 1 to 
+%                     the number of UOs.
+
+% Optionally: 
+%   cfg.cvar        = row number of the design that contains the labels of the conditions of the other factor, 
+%                     when testing for the main effect of one factor. 
+
+
+
+% Adapted by Saskia Helbling from Eric Maris' statfun_depsamplesT
+% Uses MIXED_B1_W1_ANOVA
+
 
 % set the defaults
 if ~isfield(cfg, 'computestat'),       cfg.computestat='yes';     end;
@@ -56,10 +68,29 @@ if strcmp(cfg.computeprob,'yes') && strcmp(cfg.computestat,'no')
     error('P-values can only be calculated if the test statistics are calculated.');
 end;
 
-nsmpls = size(dat,1); % damn it, and with more sensors? Loop? argh,
-% to do: change statfun such that it operates on matrices
-s.stat=zeros(nsmpls,1);
+if ((~isfield(cfg,'uvar') || isempty(cfg.uvar))) && ((~isfield(cfg,'wvar') || isempty(cfg.wvar)))
+    error('uvar or wvar must be specified for a mixed within between factorial design');
+end
 
+if (isfield(cfg,'uvar') && ~isempty(cfg.uvar)) && (isfield(cfg,'wvar') && ~isempty(cfg.wvar))
+    error('Only uvar OR wvar, not both, must be specified for a mixed within between ANOVA');
+end
+
+if (~isfield(cfg,'ivar')) || ~isempty(setdiff(cfg.ivar,[1 2]))
+    error('Please make sure that levels of the two factors (ivar) are given in the first two rows of the design matrix!');
+end
+
+if (isfield(cfg,'uvar') && ~isempty(setdiff(cfg.uvar,3)))||(isfield(cfg,'wvar') && ~isempty(setdiff(cfg.wvar,3)))
+    error('Please make sure that subject indices (uvar or wvar) are given in the third & final row of the design matrix!');
+end
+
+if size(design,1)~=3
+    error('For a mixed design 2-way ANOVA, the design matrix must have 3 rows: 1. group factor (ivar), 2. within factor (ivar), 3. subject indices (uvar or wvar)');
+end
+
+
+nsmpls = size(dat,1); 
+s.stat=zeros(nsmpls,1);
 
     if strcmp(cfg.computestat, 'yes')
         % compute the statistic
@@ -79,7 +110,7 @@ s.stat=zeros(nsmpls,1);
     
     if strcmp(cfg.computecritval,'yes')
         % also compute the critical values
-        [SSQs, DFs, MSQs, Fs, Ps] = mixed_b1_w1_anova([dat' design']);
+        [SSQs, DFs, MSQs, Fs, Ps] = mixed_b1_w1_anova([dat' design'],1);
         if cfg.tail==-1
             error('For an independent samples F-statistic, it does not make sense to calculate a left tail critical value.');
         end;
@@ -109,11 +140,11 @@ s.stat=zeros(nsmpls,1);
         if cfg.tail==1
             switch cfg.fac
                 case 'a'
-                    s.prob_uncorr = 1 - fcdf(s.stat, DFs{1}, DFs{2});
+                    s.prob = 1 - fcdf(s.stat, DFs{1}, DFs{2});
                 case 'b'
-                    s.prob_uncorr = 1 - fcdf(s.stat, DFs{3}, DFs{5});
+                    s.prob = 1 - fcdf(s.stat, DFs{3}, DFs{5});
                 case 'iaxb'
-                    s.prob_uncorr = 1 - fcdf(s.stat, DFs{4}, DFs{5});
+                    s.prob = 1 - fcdf(s.stat, DFs{4}, DFs{5});
             end
         end;
     end
