@@ -1,4 +1,4 @@
-function [SSQs, DFs, MSQs, Fs, Ps] = mixed_b1_w1_anova_fast(X,suppress_output)
+function [SSQs, DFs, MSQs, Fs, Ps] = mixed_b1_w1_anova(X,suppress_output)
 %% Vectorized version of the MIXED_BETWEEN_WITHIN_ANOVA simple function of Matthew Johnson
 % Source: http://www.mathworks.com/matlabcentral/fileexchange/27080-mixed-between within-subjects-anova
 % Adapted by Saskia Helbling
