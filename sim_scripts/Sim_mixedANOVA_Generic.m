@@ -1,8 +1,15 @@
 % Monte Carlo simulations mixed 2-way ANOVA
 % Params: fac, Rep
 
-addpath('/data/pt_user-helbling_ticket017439/helbling/permANOVA/fieldtrip-20161122_permANOVA/')
-addpath('/data/pt_user-helbling_ticket017439/helbling/permANOVA/permANOVA_Github/Scripts/stat_util')
+addpath('<PATH_TO_ADAPTED_FIELDTRIPTOOLBOX>')
+ft_defaults
+addpath('<PATH_TO_ADAPTED_FIELDTRIPTOOLBOX>/stat_util')
+
+stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR';
+resDir = [stemFolder 'SimData/ResultsMixedANOVA/']; 
+if ~exist(resDir,'dir')
+    mkdir(resDir);
+end
 
 fac = 'iaxb'; % factor or interaction of interest: 'a', 'b' and 'iaxb' for main factors A and B, and the interaction.
 
@@ -15,16 +22,6 @@ Rep = 1000;
 
 Method_List = {'ftest','exact','raw','res','totunres'}; % Note: not all tests are meaningful for each simulation. E.g. it doesn't make sense to calculate an exact test for the interaction. See
 Error_List = {'exp','gauss'};
-
-
-stemFolder = '/data/pt_user-helbling_ticket017439/helbling/permANOVA/permANOVA_Github/';
-resDir = [stemFolder 'SimData/ResultsMixedANOVA/'];
-
-if ~exist(resDir,'dir')
-    mkdir(resDir);
-end
-
-
 
 %% construct save string prefix
 savePrefix = sprintf('2way_mix_%s_S',fac);
@@ -56,11 +53,10 @@ cfg_neighb.method    = 'template';
 cfg_neighb.template  = 'CTF275_neighb.mat';
 neighbours       = ft_prepare_neighbours(cfg_neighb, data);
 
-%%
-for ee = 2%:length(Error_List)
+for ee = 1:length(Error_List)
     figure
     hold on
-    for mm = 4%5 %length(Method_List)
+    for mm = 1:length(Method_List)
         
         method = Method_List{mm};
         err_dist = Error_List{ee};
@@ -86,7 +82,6 @@ for ee = 2%:length(Error_List)
             
         saveStr = [savePrefix,'_',err_dist,'_',method];
 
-%%
         for r = 1:length(sc)
             fprintf('Effect size %d out of %d \n',r,length(sc))
             if strcmp(fac,'a')||(strcmp(fac,'iaxb')&&~Int_flag) % spurious a TAKE CARE OF THAT LATER
@@ -99,7 +94,7 @@ for ee = 2%:length(Error_List)
                 end
                 m_A = mean(A);
                 par = sqrt(sum(((A - m_A).^2)./a));
-                %                 if subjInt_flag
+                %                 if subjInt_flag  % TAKE CARE OF THAT LATER
                 %                     AS = A.*S/subjInt_scale;
                 %                     if Int_flag
                 %                         ABS = A.*B.*S/subjInt_scale;
@@ -262,7 +257,7 @@ for ee = 2%:length(Error_List)
                         stat = FtSimLink_mixed_1b_1w_ANOVA(data,neighbours,c_new,design,statfun,fac,exact);
                         res(j) = stat.prob;
                         
-                    case 'totunres' % ignore subject units, only out of curiosity
+                    case 'totunres' % ignore subject units, just out of curiosity
                         c = X(1,:);
                         design = X(2:end,:);
                         exact = 'totunres';
@@ -271,7 +266,7 @@ for ee = 2%:length(Error_List)
                         stat = FtSimLink_mixed_1b_1w_ANOVA(data,neighbours,c,design,statfun,fac,exact);
                         res(j) = stat.prob;
                         
-                    case 'exact' % only for testing, shoulnd't make a difference
+                    case 'exact' % only for testing, shouldn't make a difference
                         c = X(1,:);
                         design = X(2:end,:);
                         exact = 'yes';
