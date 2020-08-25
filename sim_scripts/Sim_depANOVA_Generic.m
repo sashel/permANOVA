@@ -1,49 +1,58 @@
 % Monte Carlo simulations dependent 2-way ANOVA
 % Params: fac, Rep, subjInt, subjInt_scale
 
-addpath('<PATH_TO_ADAPTED_FIELDTRIPTOOLBOX')
+addpath('<PATH_TO_ADAPTED_FIELDTRIPTOOLBOX>')
+ft_defaults
+addpath('<PATH_TO_ADAPTED_FIELDTRIPTOOLBOX>/stat_util')
+
+stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR';
+resDir = [stemFolder 'SimData/ResultsDepANOVA/']; 
+
+if ~exist(resDir,'dir')
+    mkdir(resDir);
+end
+
 fac = 'a'; % factor or interaction of interest: 'a', 'b' and 'iaxb' for main factors A and B, and the interaction. 
            % Note: 'b' not tested here yet, as both are within-subject factors. Could be interesting though, as the number of factor levels differs
 
 Int_flag = true; % Interaction between the two within factors?
 
-subjInt_flag = false; % Interaction between within factors and subjects?
+subjInt_flag = true; % Interaction between within factors and subjects?
+subjInt_scale = 100; % strength of interaction
 
-subjInt_scale = 100; 
+pool_flag = false;
+if pool_flag
+    statfun = 'depAnova2way_pool_df';
+else
+    statfun = 'depAnova2way';
+end
+ASblock_flag = true;
 
-pool_flag = true;
-ASblock_flag = false;
-
-Rep = 1000;
+Rep = 10;
 
 Method_List = {'ftest','exact','raw','res','totunres'}; % Note: not all tests are meaningful for each simulation. E.g. it doesn't make sense to calculate an exact test for the interaction. See 
 Error_List = {'exp','gauss'};
 
-stemFolder = '<INSERT_YOUR_OWN_WORKINGDIR';
-resDir = [stemFolder 'SimData/ResultsDepANOVA/']; 
 
+%% construct save string prefix
 savePrefix = sprintf('2way_dep_%s_S',fac);
 if subjInt_flag
     savePrefix = [savePrefix sprintf('_subjInt_%d',subjInt_scale)];
-end
-
-if Int_flag
-    savePrefix = [savePrefix '_AB'];
 end
 
 if ASblock_flag
     savePrefix = [savePrefix '_AS'];
 end
 
-
 if pool_flag
     savePrefix = [savePrefix '_pool'];
 end
 
-if ~exist(resDir,'dir')
-    mkdir(resDir);
+if Int_flag
+    savePrefix = [savePrefix '_AB'];
 end
 
+%% build data matrix
 a = 3; % number of levels factor A
 b = 4; % number of levels factor B
 n = 5; % number of UOs (e.g. subjects)
@@ -64,69 +73,63 @@ if subjInt_flag
     BS = B.*S/subjInt_scale;
 end
 
+%% build design matrix
 design = [repmat([1,2,3],1,b*n);repmat([1 1 1 2 2 2 3 3 3 4 4 4],1,n); [ones(1,a*b) ones(1,a*b)*2 ones(1,a*b)*3 ones(1,a*b)*4 ones(1,a*b)*5]];
 if ASblock_flag
     ASvar = zeros(1,size(design,2));
-for j = 1:n
-    for ii = 1:a  
-    ASvar(a*b*(j-1)+(ii:a:a*b)) = j*a-3+ii;
+    for j = 1:n
+        for ii = 1:a
+            ASvar(a*b*(j-1)+(ii:a:a*b)) = j*a-3+ii;
+        end
     end
-end
-design = [design;ASvar]; 
-
-rearrange = [];
-for rr = 1:n
-    for ii = 1:a
-        rearrange = [rearrange, (a*b*(rr-1))+ii:a:a*b*rr];
+    design = [design;ASvar];
+    
+    rearrange = [];
+    for rr = 1:n
+        for ii = 1:a
+            rearrange = [rearrange, (a*b*(rr-1))+ii:a:a*b*rr];
+        end
     end
+    
+    design = design(:,rearrange);    
 end
 
-design = design(:,rearrange);
-
-end
-
+% Fieldtrip wants a neighbourhood matrix for its clustering approach
 load([stemFolder filesep 'dummy'],'data');
 cfg_neighb.method    = 'template';
 cfg_neighb.template  = 'CTF275_neighb.mat';
 neighbours       = ft_prepare_neighbours(cfg_neighb, data);
 
-if pool_flag
-    
-    statfun = 'depAnova2way_pool_df';
-else
-    statfun = 'depAnova2way';
-end
-
-sprintf('%s\n',savePrefix)
+sprintf('Working on %s\n',savePrefix)
 
 for ee = 1:length(Error_List)
     fprintf('Error dist.: %s \n',Error_List{ee})
+            err_dist = Error_List{ee};
+     if strcmp(err_dist,'exp')
+            if strcmp(fac, 'a')
+                sc = [100000, 230, 140, 90, 65, 48, 34,26, 20]/10;
+            elseif strcmp(fac,'iaxb')
+                sc = [100000, 400, 200, 130, 80, 55, 40, 30, 24]*3;
+            end
+        elseif strcmp(err_dist,'gauss')
+            if strcmp(fac, 'a')
+                sc = [100000, 140, 80, 56, 44, 36, 30, 25, 20]*3;
+            elseif strcmp(fac,'iaxb')
+                sc = [100000, 200, 100, 70, 50, 40, 34, 28, 24]*100;
+            end
+     end
+        
     figure
     hold on
     for mm = 1:length(Method_List)
         fprintf('Stats: %s \n',Method_List{mm})
         method = Method_List{mm};
-        err_dist = Error_List{ee};
-        
-        if strcmp(err_dist,'exp')
-            if strcmp(fac, 'a')
-                sc = [100000, 230,140, 90, 65, 48, 34,26, 20]/10;
-            elseif strcmp(fac,'iaxb')
-                sc = [100000, 400, 200, 130,  80, 55, 40, 30, 24]*3;
-            end
-        elseif strcmp(err_dist,'gauss')
-            if strcmp(fac, 'a')
-                sc = [100000, 140, 80,56,44 ,36,  30, 25, 20]*3;
-            elseif strcmp(fac,'iaxb')
-                sc = [100000, 200, 100, 70, 50, 40, 34, 28, 24]*100;
-            end
-        end
-        
+  
         saveStr = [savePrefix,'_',err_dist,'_',method];
         p_val = zeros(1,length(sc));
         params = zeros(1,length(sc));
         
-        for r = 1:length(sc)
+        for r = 1:length(sc) % loop through increasing effect sizes
             fprintf('Effect size %d out of %d \n',r,length(sc))
             if strcmp(fac,'a')||(strcmp(fac,'iaxb')&&~Int_flag)
                 % gradual increase of main factor
@@ -164,13 +167,12 @@ for ee = 1:length(Error_List)
             end
             res = zeros(1,Rep);
             
-           for j = 1:Rep
-                
+           for j = 1:Rep % loop through repetitions
                 % put the model together & add errors
                 if Int_flag
                     y = S + A + B + AB;
                     if subjInt_flag
-                        y = y + AS + BS + ABS;
+                        y = y + AS + BS + ABS; % add subject-interaction terms
                     end
                 else
                     y = S + A + B;
@@ -179,6 +181,7 @@ for ee = 1:length(Error_List)
                     end
                 end
                 
+                % add error terms
                 if strcmp(err_dist,'exp')
                     y = y + (exprnd(1,a,b,n)).^3;
                 elseif strcmp(err_dist,'gauss')
@@ -188,7 +191,9 @@ for ee = 1:length(Error_List)
                 switch method
                     case 'ftest'
                         
-                        % prepare data input
+                        % prepare data input for anova2rm_cell_mod*
+                        % functions which are called here directly:
+                        % 3 x 4 cell matrix, each containing 5 data points
                         c{1,1} = squeeze(y(1,1,:))';
                         c{1,2} = squeeze(y(1,2,:))';
                         c{1,3} = squeeze(y(1,3,:))';
@@ -217,7 +222,7 @@ for ee = 1:length(Error_List)
                         end
                         
                     case 'raw'
-                        c = reshape(y,1,a*b*n);
+                        c = reshape(y,1,a*b*n); % concatenate data points into a vector. Rearrangment into cell matrix will be done within the statfun (e.g.ft_statfun_depAnova2way)
                         exact = 'no';
                         % permutation ANOVA is called here
                         if ~ASblock_flag
@@ -225,7 +230,6 @@ for ee = 1:length(Error_List)
                         else
                             stat = FtSimLink_depANOVA_AS(data,neighbours,c(rearrange),design,statfun,fac,exact);
                         end
-                        
                         res(j) = stat.prob;
                         
                     case 'exact'
@@ -374,7 +378,7 @@ for ee = 1:length(Error_List)
         xlim([min(param) max(param)])
         
         cd(resDir)
-        save(saveStr,'param','p_val','S*','A*','B*','sc','method')
+        save(saveStr,'param','p_val','S*','A*','B*','sc','method','res')
         clear param p_val c
         cd(stemFolder)
         
