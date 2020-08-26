@@ -11,13 +11,14 @@ To run permutation ANOVAs within the Fieldtrip toolbox:
 
 2. The actual ANOVA calculations are done by the functions in *statfuns_for_ft/private*. Put those into the private subfolder of the statfun folder 
 
-3. Next, you’ll have to modify some Fieldtrip functions. Note that the line numbers given below might be slightly different in your Fieldtrip version. 
+3. Next, you’ll have to modify some Fieldtrip functions. Note that the line numbers given below might be slightly different in your Fieldtrip version (I used fieldtrip-20200821). 
+
 In ft_statistics_montecarlo:
     * around line 120 (where the defaults for the main function are set), add the following line to set the default effect of interest to be the interaction: 
    
             cfg.fac = ft_getopt(cfg, 'fac','iaxb');
 
-   * starting at line 213, replace the assignment 
+   * starting at line 214, replace the assignment 
    
             resample = resampledesign(cfg, design); 
      
@@ -31,7 +32,7 @@ In ft_statistics_montecarlo:
 
       This will allow you to use some pre-computed, more complex permutation matrices (not necessary for an independent two-way ANOVA, but e.g. for group x condition interactions in a mixed-design ANOVA) 
 
-    * at approximately line 229 add I think you should use an `tmpcfg.fac = cfg.fac;` 
+    * at approximately line 240 add `tmpcfg.fac = cfg.fac;` 
       This configuration struct field will be used to indicate the factor or interaction of interest. This can be 'a' (first factor), 'b' (second factor) or 'iaxb' for the interaction
 
     In resampledesign (in the private folder of your Fieldtrip version):
@@ -43,7 +44,6 @@ In ft_statistics_montecarlo:
 
           resample(:,cat(2, blocksel{:})) = cat(2, blockres{:}); 
           
-      See the following bug note: http://bugzilla.fcdonders.nl/show_bug.cgi?id=1546
           
     * At about line 160 replace 
     
@@ -56,7 +56,7 @@ In ft_statistics_montecarlo:
           warning('off', wvar_warnid)
   
 
-  Now your Fieldtrip version is set up and ready to run permutation ANOVAs.
+  Now your Fieldtrip version is set up and ready to run permutation ANOVAs. Make sure it is in your path and call *ft_defaults*.
 
 
 ## Run simulations
@@ -65,9 +65,9 @@ To replicate the simulations first set up Fieldtrip as described above, then:
 
 1. Make a new subfolder *stat_util* in your working directory *<PATH_TO_WORKING_DIR>/stat_util* and copy the files in *statfuns_for_ft/private* into this new folder. This is to allow direct access to the core stats functions.
 
-2. Put the file *dummy.mat* (which contains a data struture in Fieldtrip format) into your working directory
+2. Put the file *dummy.mat* (which contains a data struture in Fieldtrip format) into your working directory.
 
-3. Get the files in *sim_scripts*. Scripts to run the simulations start with the prefix *Sim_*, results can be plotted using the scripts that start with *plotPower_*. *FtSimLink* functions link the simulation scripts to Fieldtrip where the actual computations are performed.
+3. Get the files in *sim_scripts*. Scripts to run the simulations start with the prefix *Sim_*, results can be plotted using the scripts that start with *plotPower_*. *FtSimLink* functions link the simulation scripts to Fieldtrip where the actual computations are performed. Make sure *sim_scripts* is in your path.
 
 ## Example: 2-way balanced independent ANOVA
 
