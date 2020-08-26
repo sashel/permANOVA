@@ -3,9 +3,9 @@
 
 addpath('<PATH_TO_ADAPTED_FIELDTRIPTOOLBOX>')
 ft_defaults
-addpath('<PATH_TO_ADAPTED_FIELDTRIPTOOLBOX>/stat_util')
 
 stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR';
+addpath([stemFolder 'stat_util/']) 
 resDir = [stemFolder 'SimData/ResultsDepANOVA/']; 
 
 if ~exist(resDir,'dir')
