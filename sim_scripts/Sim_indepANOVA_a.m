@@ -1,8 +1,18 @@
 %% Simulations of an increasing main effect in an independent, balanced 2-way ANOVA without interaction
 % Uses FtSimLink_indepANOVA, anova2_cell_mod
+% Monte Carlo simulations independent 2-way ANOVA
 
-stemFolder = pwd;
-resDir = [stemFolder filesep 'SimData' filesep 'ResultsIndepANOVA_a' filesep];
+addpath('<PATH_TO_ADAPTED_FIELDTRIPTOOLBOX>')
+ft_defaults
+
+stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR';
+addpath([stemFolder 'stat_util/']) 
+resDir = [stemFolder 'SimData/ResultsIndepANOVA/']; 
+
+if ~exist(resDir,'dir')
+    mkdir(resDir);
+end
+
 savePrefix = '2way_indep_a';
 
 if ~exist(resDir,'dir')
