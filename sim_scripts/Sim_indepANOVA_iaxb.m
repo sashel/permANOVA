@@ -1,8 +1,13 @@
 %% Simulations of an increasing interaction effect in an independent, balanced 2-way ANOVA
 % Uses FtSimLink_indepANOVA, anova2_cell_mod
 
-stemFolder = pwd;
-resDir = [stemFolder filesep 'SimData' filesep 'ResultsIndepANOVA_iaxb' filesep];
+addpath('<PATH_TO_ADAPTED_FIELDTRIPTOOLBOX>')
+ft_defaults
+
+stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR';
+addpath([stemFolder 'stat_util/']) 
+resDir = [stemFolder 'SimData/ResultsIndepANOVA/']; 
+
 savePrefix = '2way_indep_iaxb';
 
 if ~exist(resDir,'dir')
