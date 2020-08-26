@@ -1,8 +1,13 @@
 %% Test for spurious interactions in an independent, balanced 2-way ANOVA without interaction with increasing main effect A
 % Uses FtSimLink_indepANOVA, anova2_cell_mod
+addpath('<PATH_TO_ADAPTED_FIELDTRIPTOOLBOX>')
+ft_defaults
 
-stemFolder = pwd;
-resDir = [stemFolder filesep 'SimData' filesep 'ResultsIndepANOVA_spurInt' filesep];
+stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR';
+addpath([stemFolder 'stat_util/']) 
+resDir = [stemFolder 'SimData/ResultsIndepANOVA/']; 
+
+
 savePrefix = '2way_indep_spurInt';
 
 if ~exist(resDir,'dir')
