@@ -1,7 +1,12 @@
 %% Uses
 % FtSimLink, anova2_cell_mod
-stemFolder = '/nobackup/cartman2/helbling/permANOVA/permANOVA_Github/';
-resDir = [stemFolder 'SimData/ResultsIndepANOVA_a_Unbalanced/'];
+addpath('<PATH_TO_ADAPTED_FIELDTRIPTOOLBOX>')
+ft_defaults
+
+stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR';
+addpath([stemFolder 'stat_util/']) 
+resDir = [stemFolder 'SimData/ResultsIndepANOVA/']; 
+
 savePrefix = '2way_indep_a_unbalanced';
 
 if ~exist(resDir,'dir')
