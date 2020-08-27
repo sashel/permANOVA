@@ -1,10 +1,8 @@
 % Monte Carlo simulations dependent 2-way ANOVA
 % Params: fac, Rep, subjInt, subjInt_scale
 
-addpath('<PATH_TO_ADAPTED_FIELDTRIPTOOLBOX>')
-ft_defaults
-
-stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR>';
+% stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR>';
+stemFolder = '/data/pt_np-helbling/permANOVA/';
 addpath([stemFolder 'stat_util/']) 
 resDir = [stemFolder 'SimData/ResultsDepANOVA/']; 
 
@@ -12,12 +10,13 @@ if ~exist(resDir,'dir')
     mkdir(resDir);
 end
 
-fac = 'a'; % factor or interaction of interest: 'a', 'b' and 'iaxb' for main factors A and B, and the interaction. 
-           % Note: 'b' not tested here yet, as both are within-subject factors. Could be interesting though, as the number of factor levels differs
+fac = 'a'; % factor or interaction of interest: 'a' and 'iaxb' for main factor A and the interaction. 
+              % Note: 'b' not tested here yet, as both are within-subject factors
+Rep = 5; % reduce number of repetitions REP when testing the code
 
 Int_flag = true; % Interaction between the two within factors?
 
-subjInt_flag = true; % Interaction between within factors and subjects?
+subjInt_flag = false; % Interaction between within factors and subjects?
 subjInt_scale = 100; % strength of interaction
 
 pool_flag = false;
@@ -26,9 +25,7 @@ if pool_flag
 else
     statfun = 'depAnova2way';
 end
-ASblock_flag = true;
-
-Rep = 10;
+ASblock_flag = false;
 
 Method_List = {'ftest','exact','raw','res','totunres'}; % Note: not all tests are meaningful for each simulation. E.g. it doesn't make sense to calculate an exact test for the interaction. See 
 Error_List = {'exp','gauss'};

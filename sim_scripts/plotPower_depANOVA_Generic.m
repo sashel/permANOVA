@@ -1,26 +1,28 @@
+% Generate power plots for the simulations 
 stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR';
-resDir = [stemFolder 'SimData/ResultsDepANOVA/']; 
+stemFolder = '/data/pt_np-helbling/permANOVA';
 
-% compare savePrefix in Sim_depANOVA_Generic
-model = 'S';
-model = 'S_pool'; 
-model = 'S_subjInt_50';
-model = 'S_subjInt_50_pool';
-model = 'S_subjInt_100';
-model = 'S_subjInt_100_pool'; 
-model = 'S_AS';% : all done 'AS' and 'AS_AB' extremely similar - do we need all methods here? totunres? exact, what are the differences?
-model = 'S_subjInt_50_AS'; 
-model = 'S_subjInt_100_AS'; 
-model_str = 'S_subjInt_100_AB_AS';
+resDir = [stemFolder '/SimData/ResultsDepANOVA/']; 
 
-totunres_flag = 1;
+cd(resDir)
 
-if strcmp(model,'S')||strcmp(model,'S_pool')||strcmp(model,'S_subjInt_50')||...
-    strcmp(model,'S_subjInt_50_pool')||strcmp(model,'S_subjInt_100')||strcmp(model,'S_subjInt_100_pool')
-    effect = {'mainInt','spurInt','confMain'}; % 'mainInt', 'spurInt', 'confMain' or 'onlyMain'
-elseif strcmp(model,'S_AS')||strcmp(model,'S_subjInt_50_AS')||strcmp(model,'S_subjInt_100_AS')
-    effect = {'onlyMain','confMain'}; % 'mainInt', 'spurInt', 'confMain' or 'onlyMain'
-end
+model = 'S'; % compare to savePrefix in Sim_depANOVA_Generic. Other examples 'S_subjInt_50' or 'S_subjInt_100_AS' etc.
+
+totunres_flag = 1; % plot power 
+
+effect = {'confMain'}; % 'mainInt', 'spurInt', 'confMain' or 'onlyMain'
+
+% Un-comment the if clause below if you want to determine from the model string which effects
+% should be plotted. Obviously, you first need to run the respective
+% simulations
+
+% if strcmp(model,'S')||strcmp(model,'S_pool')||strcmp(model,'S_subjInt_50')||...
+%     strcmp(model,'S_subjInt_50_pool')||strcmp(model,'S_subjInt_100')||strcmp(model,'S_subjInt_100_pool')
+%     effect = {'mainInt','spurInt','confMain'}; 
+% elseif strcmp(model,'S_AS')||strcmp(model,'S_subjInt_50_AS')||strcmp(model,'S_subjInt_100_AS')
+%     effect = {'onlyMain','confMain'}; 
+% end
+
 
 for eff = 1:length(effect)
 if strcmp(effect{eff},'mainInt')
@@ -65,9 +67,11 @@ end
 load(['2way_dep_' model_str '_gauss_ftest.mat'])
 plot(param,p_val,'--d','color',[0.4 0.4 0.4],'linewidth',1.2)
 fprintf(fileID,'gauss ftest: %1.3f\n',p_val(1));
-load(['2way_dep_' model_str '_gauss_exact.mat'])
-plot(param,p_val,'g-<','color',[42 41 112]./255,'linewidth',1.2)
-fprintf(fileID,'gauss exact: %1.3f\n',p_val(1));
+if ~strcmp(effect{eff},'spurInt')
+    load(['2way_dep_' model_str '_gauss_exact.mat'])
+    plot(param,p_val,'g-<','color',[42 41 112]./255,'linewidth',1.2)
+    fprintf(fileID,'gauss exact: %1.3f\n',p_val(1));
+end
 load(['2way_dep_' model_str '_gauss_raw.mat'])
 plot(param,p_val,'-s','color',[178 220 38]./255, 'linewidth',1.2)
 fprintf(fileID,'gauss raw: %1.3f\n',p_val(1));
@@ -105,15 +109,18 @@ hold on
 load(['2way_dep_' model_str '_exp_ftest.mat'])
 plot(param,p_val,'--d','color',[0.4 0.4 0.4],'linewidth',1.2)
 fprintf(fileID,'exp ftest: %1.3f\n',p_val(1));
-load(['2way_dep_' model_str '_exp_exact.mat'])
-plot(param,p_val,'g-<','color',[42 41 112]./255,'linewidth',1.2)
-fprintf(fileID,'exp exact: %1.3f\n',p_val(1));
+if ~strcmp(effect{eff},'spurInt')
+    load(['2way_dep_' model_str '_exp_exact.mat'])
+    plot(param,p_val,'g-<','color',[42 41 112]./255,'linewidth',1.2)
+    fprintf(fileID,'exp exact: %1.3f\n',p_val(1));
+end
 load(['2way_dep_' model_str '_exp_raw.mat'])
 plot(param,p_val,'-s','color',[178 220 38]./255, 'linewidth',1.2)
 fprintf(fileID,'exp raw: %1.3f\n',p_val(1));
 load(['2way_dep_' model_str '_exp_res.mat'])
 plot(param,p_val,'o-','color',[226 40 12]./255, 'linewidth',1.2)
 fprintf(fileID,'exp res: %1.3f\n',p_val(1));
+
 if totunres_flag
     load(['2way_dep_' model_str '_exp_totunres.mat'])
     plot(param,p_val,'o-','color',[153 153 255]./255, 'linewidth',1.2)
@@ -127,8 +134,11 @@ elseif strcmp(effect{eff},'spurInt')
 end
 title('Exp. errors','FontSize',11,'FontName','Helvetica','FontWeight' , 'bold','FontAngle','italic')
 
-
-hleg1 = legend('F-test','exact','raw','res','totunres');
+if ~strcmp(effect{eff},'spurInt')
+    hleg1 = legend('F-test','exact','raw','res','totunres');
+else
+    hleg1 = legend('F-test','raw','res','totunres');
+end
 
 % Set Legend Properties
 set(hleg1,'Location','SouthEast')

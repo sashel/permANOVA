@@ -1,5 +1,7 @@
-stemFolder = '/data/pt_user-helbling_ticket017439/helbling/permANOVA/permANOVA_Github/';
-resDir = [stemFolder 'SimData/ResultsMixedANOVA'];
+% stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR';
+stemFolder = '/data/pt_np-helbling/permANOVA/';
+addpath([stemFolder 'stat_util/']) 
+resDir = [stemFolder 'SimData/ResultsMixedANOVA/']; 
 
 % compare savePrefix in Sim_depANOVA_Generic
 model_str = 'S';

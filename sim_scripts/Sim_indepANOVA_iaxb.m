@@ -1,20 +1,19 @@
-%% Simulations of an increasing interaction effect in an independent, balanced 2-way ANOVA
+%% Simulating an increasing interaction effect in an independent, balanced 2-way ANOVA
 % Uses FtSimLink_indepANOVA, anova2_cell_mod
+% Monte Carlo simulations independent 2-way ANOVA
 
-addpath('<PATH_TO_ADAPTED_FIELDTRIPTOOLBOX>')
-ft_defaults
-
-stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR';
+% stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR>';
+stemFolder = '/data/pt_np-helbling/permANOVA/';
 addpath([stemFolder 'stat_util/']) 
 resDir = [stemFolder 'SimData/ResultsIndepANOVA/']; 
 
-savePrefix = '2way_indep_iaxb';
+savePrefix = '2way_indep_iaxb_AB';
 
 if ~exist(resDir,'dir')
     mkdir(resDir);
-end;
+end
 
-Rep = 1000; % number of Monte Carlo simulations
+Rep = 5; % number of Monte Carlo simulations
 
 a = 3; % number of levels in factor A
 b = 4; % number of levels in factor B
@@ -159,17 +158,17 @@ for ee = 1:length(Error_List)
                     
                 end
                 p_val(r) = length(find(res_I <= 0.05))/Rep;
-            paramAB(r) = par;
+            param(r) = par;
         end
         
         %%
         switch method
             case 'ftest'
-                plot(paramAB,p_val,':d','color',[0.4 0.4 0.4],'linewidth',2)
+                plot(param,p_val,':d','color',[0.4 0.4 0.4],'linewidth',2)
             case 'raw'
-                plot(paramAB,p_val,'g:d','linewidth',2)
+                plot(param,p_val,'g:d','linewidth',2)
             case 'res'
-                plot(paramAB,p_val,'m:s','linewidth',2)
+                plot(param,p_val,'m:s','linewidth',2)
         end
         
         set(gcf,'color','w')
@@ -190,10 +189,10 @@ for ee = 1:length(Error_List)
             'YTick'       , [0.05 0.2:0.2:1], ...   
             'LineWidth'   , 1         );
         box off
-        xlim([min(paramAB) max(paramAB)])
+        xlim([min(param) max(param)])
         cd(resDir)
-        save(saveStr,'paramAB','p_val*','A','B', 'AB', 'sc','method')
-        clear paramAB p_val* c
+        save(saveStr,'param','p_val*','A','B', 'AB', 'sc','method')
+        clear param p_val* c
         cd(stemFolder)
     end
 end

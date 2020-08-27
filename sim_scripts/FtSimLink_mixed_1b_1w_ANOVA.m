@@ -29,11 +29,6 @@ cfg.fac              = fac;
 switch cfg.fac
     case 'a'
         switch main_exact_flag
-            case 'no'
-                cfg.ivar = [1 2];
-                cfg.wvar = 3;
-                cfg.uvar = [];
-                cfg.cvar = [];
             case 'yes'
                 cfg.ivar = [1 2];
                 cfg.wvar = 3;
@@ -44,7 +39,7 @@ switch cfg.fac
                 cfg.wvar = [];
                 cfg.uvar = [];
                 cfg.cvar = [];
-            case 'unres'
+            case 'no'
                 [~, ftpath] = ft_version;
                 cd([ftpath '/private'])
                 clear resample
@@ -73,7 +68,7 @@ switch cfg.fac
         end
     case 'b'
         switch main_exact_flag
-            case 'no'
+            case 'yes'
                 cfg.ivar = [1 2];
                 cfg.wvar = [];
                 cfg.uvar = 3;
@@ -83,12 +78,7 @@ switch cfg.fac
                 cfg.wvar = [];
                 cfg.uvar = [];
                 cfg.cvar = [];
-            case 'yes'
-                cfg.ivar = [1 2];
-                cfg.wvar = [];
-                cfg.uvar = 3;
-                cfg.cvar = [];
-            case 'unres'
+            case 'no'
                 [~, ftpath] = ft_version;
                 cd([ftpath '/private'])
                 clear resample
@@ -117,7 +107,7 @@ switch cfg.fac
                
     case 'iaxb'
         switch main_exact_flag
-            case 'unres'
+            case 'no'
                 [~, ftpath] = ft_version;
                 cd([ftpath '/private'])
                 clear resample
@@ -157,8 +147,7 @@ switch cfg.fac
                 cfg.wvar = [];
                 cfg.uvar = 3;
                 cfg.cvar = [];
-        end
-        
+        end     
 end
 
 cfg.design = design;

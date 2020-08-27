@@ -1,9 +1,8 @@
-%% Uses
+% Monte Carlo simulations independent 2-way ANOVA
 % FtSimLink, anova2_cell_mod
-addpath('<PATH_TO_ADAPTED_FIELDTRIPTOOLBOX>')
-ft_defaults
 
-stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR';
+% stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR';
+stemFolder = '/data/pt_np-helbling/permANOVA/';
 addpath([stemFolder 'stat_util/']) 
 resDir = [stemFolder 'SimData/ResultsIndepANOVA/']; 
 
@@ -11,9 +10,9 @@ savePrefix = '2way_indep_a_unbalanced';
 
 if ~exist(resDir,'dir')
     mkdir(resDir);
-end;
+end
 
-Rep = 100;
+Rep = 5;
 
 a = 3;
 b = 4;
@@ -35,7 +34,7 @@ Error_List = {'exp','gauss'};
 for ee = 1:length(Error_List)
     figure
     hold on
-    for mm = 1 :length(Method_List)
+    for mm = 1:length(Method_List)
         
         method = Method_List{mm};
         err_dist = Error_List{ee};
@@ -86,7 +85,7 @@ for ee = 1:length(Error_List)
                             c = reshape(y,1,numel(y));
                             c = c(1:end-1);
                             exact = 'no';
-                            statfun = 'indepAnova2way_unbalanced';
+                            statfun = 'indepAnova2way';
                             % permutation ANOVA is called here
                             stat = FtSimLink_indepANOVA(data,neighbours,c,design,statfun,fac,exact);
                             res_A(j) = stat.prob;
@@ -96,15 +95,15 @@ for ee = 1:length(Error_List)
                             c = reshape(y,1,a*b*n);
                             c = c(1:end-1);
                             exact = 'yes';
-                            statfun = 'indepAnova2way_unbalanced';
+                            statfun = 'indepAnova2way';
                             stat = FtSimLink_indepANOVA(data,neighbours,c,design,statfun,fac,exact);
                             res_A(j) = stat.prob;
                             
                             
-                        case 'res'
-                            
+                        case 'res'          
                             fac = 'a';
-                            c = reshape(y,1,a*b*n); 
+                            c = reshape(y,1,numel(y)); 
+                            c = c(1:end-1);
                             ncond_a = a;
                             ncond_b = b;
                             
@@ -114,13 +113,13 @@ for ee = 1:length(Error_List)
                                     anovaIn{nfac_a,nfac_b} = c(idx_ab);
                                 end
                             end
-                            idx_ab = design(1,:) == ncond_a & design(2,:) == ncond_b;
-                                    anovaIn{ncond_a,ncond_b} = nans(size(c(idx_ab)));
-                            
+%                             idx_ab = design(1,:) == ncond_a & design(2,:) == ncond_b;
+%                                     anovaIn{ncond_a,ncond_b} = ones(size(c(idx_ab)))*NaN;
+%                             
                             for jj = 1:size(anovaIn,2)
-                                tmp = zeros(size(anovaIn{1,1}));
+                                tmp = zeros(1,max(max(cellfun('length',anovaIn))),size(anovaIn,1));
                                 for ii = 1:size(anovaIn,1)
-                                    tmp(:,:,ii) = (anovaIn{ii,jj});
+                                    tmp(:,1:length(anovaIn{ii,jj}),ii) = (anovaIn{ii,jj});
                                 end
                                 bmean(jj) = squeeze(nanmean(nanmean(tmp)));
                             end
@@ -132,9 +131,9 @@ for ee = 1:length(Error_List)
                                     c_new(idx_ab) = c(idx_ab) - bmean(jj);
                                 end
                             end
-                            c_new = c_new(1:end-1);
+                            
                             exact = 'no';
-                            statfun = 'indepAnova2way_unbalanced';
+                            statfun = 'indepAnova2way';
                             stat = FtSimLink_indepANOVA(data,neighbours,c_new,design,statfun,fac,exact);
                             res_A(j) = stat.prob;
                             

@@ -1,10 +1,8 @@
 % Monte Carlo simulations mixed 2-way ANOVA
 % Params: fac, Rep
 
-addpath('<PATH_TO_ADAPTED_FIELDTRIPTOOLBOX>')
-ft_defaults
-
-stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR';
+% stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR';
+stemFolder = '/data/pt_np-helbling/permANOVA/';
 addpath([stemFolder 'stat_util/']) 
 resDir = [stemFolder 'SimData/ResultsMixedANOVA/']; 
 
@@ -13,7 +11,7 @@ if ~exist(resDir,'dir')
     mkdir(resDir);
 end
 
-fac = 'iaxb'; % factor or interaction of interest: 'a', 'b' and 'iaxb' for main factors A and B, and the interaction.
+fac = 'b'; % factor or interaction of interest: 'a', 'b' and 'iaxb' for main factors A and B, and the interaction.
 
 Int_flag = false; % Interaction between the two factors?
 
@@ -22,7 +20,7 @@ Int_flag = false; % Interaction between the two factors?
 
 Rep = 1000;
 
-Method_List = {'ftest','exact','raw','res','totunres'}; % Note: not all tests are meaningful for each simulation. E.g. it doesn't make sense to calculate an exact test for the interaction. See
+Method_List = {'ftest','exact','raw','res','totunres'}; % Note: not all tests are meaningful for each simulation. E.g. it doesn't make sense to calculate an exact test for the interaction. 
 Error_List = {'exp','gauss'};
 
 %% construct save string prefix
@@ -178,7 +176,7 @@ for ee = 1:length(Error_List)
                     case 'raw'
                         c = X(1,:);
                         design = X(2:end,:);
-                        exact = 'unres';
+                        exact = 'no';
                         statfun = 'mixedAnova_1b_1w';
                         stat = FtSimLink_mixed_1b_1w_ANOVA(data,neighbours,c,design,statfun,fac,exact);
                         res(j) = stat.prob;
@@ -254,8 +252,8 @@ for ee = 1:length(Error_List)
                         end
                         
                         
-                        exact = 'unres';
-                        statfun = 'mixedANOVA_1b_1w';
+                        exact = 'no';
+                        statfun = 'mixedAnova_1b_1w';
                         stat = FtSimLink_mixed_1b_1w_ANOVA(data,neighbours,c_new,design,statfun,fac,exact);
                         res(j) = stat.prob;
                         
@@ -263,26 +261,35 @@ for ee = 1:length(Error_List)
                         c = X(1,:);
                         design = X(2:end,:);
                         exact = 'totunres';
-                        statfun = 'mixedANOVA_1b_1w';
+                        statfun = 'mixedAnova_1b_1w';
                         % permutation ANOVA is called here
                         stat = FtSimLink_mixed_1b_1w_ANOVA(data,neighbours,c,design,statfun,fac,exact);
                         res(j) = stat.prob;
                         
-                    case 'exact' % only for testing, shouldn't make a difference
+                    case 'exact' % 
+                        if strcmp(fac,'iaxb')
+                        warning('No exact test for the interaction effect in a mixed-design ANOVA, using permutation scheme for exact group main effect');  
+                        c = X(1,:);
+                        design = X(2:end,:);
+                        exact = 'yes_a';
+                        statfun = 'mixedAnova_1b_1w';
+                        stat = FtSimLink_mixed_1b_1w_ANOVA(data,neighbours,c,design,statfun,fac,exact);
+                        res(j) = stat.prob;    
+                        else
                         c = X(1,:);
                         design = X(2:end,:);
                         exact = 'yes';
-                        statfun = 'mixedANOVA_1b_1w';
+                        statfun = 'mixedAnova_1b_1w';
                         stat = FtSimLink_mixed_1b_1w_ANOVA(data,neighbours,c,design,statfun,fac,exact);
-                        res(j) = stat.prob;
+                        res(j) = stat.prob;    
+                        end
                 end
                 
             end
             p_val(r) = length(find(res <= 0.05))/Rep;
             param(r) = par;
         end
-        
-        
+
         switch method
             case 'ftest'
                 plot(param,p_val,':d','color',[0.4 0.4 0.4],'linewidth',2)

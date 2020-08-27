@@ -2,10 +2,8 @@
 % Uses FtSimLink_indepANOVA, anova2_cell_mod
 % Monte Carlo simulations independent 2-way ANOVA
 
-addpath('<PATH_TO_ADAPTED_FIELDTRIPTOOLBOX>')
-ft_defaults
-
-stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR';
+% stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR>';
+stemFolder = '/data/pt_np-helbling/permANOVA/';
 addpath([stemFolder 'stat_util/']) 
 resDir = [stemFolder 'SimData/ResultsIndepANOVA/']; 
 
@@ -17,9 +15,9 @@ savePrefix = '2way_indep_a';
 
 if ~exist(resDir,'dir')
     mkdir(resDir);
-end;
+end
 
-Rep = 1000; % number of Monte Carlo simulations
+Rep = 5; % number of Monte Carlo simulations
 
 a = 3; % number of levels in factor A
 b = 4; % number of levels in factor B
@@ -38,6 +36,7 @@ neighbours       = ft_prepare_neighbours(cfg_neighb, data);
 
 Method_List = {'ftest','raw','exact','res'};
 Error_List = {'exp','gauss'};
+
 for ee = 1:length(Error_List)
     figure
     hold on
@@ -124,8 +123,7 @@ for ee = 1:length(Error_List)
                                 idx_ab = design(1,:) == nfac_a & design(2,:) == nfac_b;
                                 anovaIn{nfac_a,nfac_b} = c(idx_ab);
                             end
-                        end
-                        
+                        end            
                         
                         for jj = 1:size(anovaIn,2)
                             tmp = zeros(size(anovaIn{1,1}));
@@ -145,24 +143,23 @@ for ee = 1:length(Error_List)
                         exact = 'no';
                         statfun = 'indepAnova2way';
                         stat = FtSimLink_indepANOVA(data,neighbours,c_new,design,statfun,fac,exact);
-                        res_A(j) = stat.prob;
-                        
+                        res_A(j) = stat.prob;               
                 end
                 
             end
             p_val(r) = length(find(res_A <= 0.05))/Rep;
-            paramA(r) = par;
+            param(r) = par;
         end
         
         switch method
             case 'ftest'
-                plot(paramA,p_val,':d','color',[0.4 0.4 0.4],'linewidth',2)
+                plot(param,p_val,':d','color',[0.4 0.4 0.4],'linewidth',2)
             case 'raw'
-                plot(paramA,p_val,'g:d','linewidth',2)
+                plot(param,p_val,'g:d','linewidth',2)
             case 'exact'
-                plot(paramA,p_val,':*','linewidth',2)
+                plot(param,p_val,':*','linewidth',2)
             case 'res'
-                plot(paramA,p_val,'m:s','linewidth',2)
+                plot(param,p_val,'m:s','linewidth',2)
         end
         set(gcf,'color','w')
         xlabel('\theta_A','FontSize',10,'FontName','Helvetica')
@@ -179,14 +176,14 @@ for ee = 1:length(Error_List)
             'XMinorTick'  , 'off'      , ...
             'YMinorTick'  , 'off'      , ...
             'YGrid'       , 'off'      , ...
-            'YTick'       , [0.05 0.2:0.2:1], ...   %'YTickLabel'       , [], ...
+            'YTick'       , [0.05 0.2:0.2:1], ...  
             'LineWidth'   , 1         );
         box off
-        xlim([min(paramA) max(paramA)])
+        xlim([min(param) max(param)])
         
         cd(resDir)
-        save(saveStr,'paramA','p_val*','A','B','sc','method')
-        clear paramA p_val* c
+        save(saveStr,'param','p_val*','A','B','sc','method')
+        clear param p_val* c
         cd(stemFolder)
     end
 end
