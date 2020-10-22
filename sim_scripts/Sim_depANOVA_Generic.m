@@ -18,6 +18,7 @@ int_flag = true; % Interaction between the two within factors?
 subjInt_flag = false; % Interaction between within factors and subjects?
 subjInt_scale = 50; % strength of interaction
 pool_flag = true;
+
 if pool_flag
     statfun = 'depAnova2way_pool_df';
 else

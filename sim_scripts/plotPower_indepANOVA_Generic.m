@@ -22,6 +22,7 @@ for eff = 1:length(effect)
     xpos = 50;
     ypos = 300;
     
+
     % open file to write alpha errors to
     fileID = fopen(['indepAnov' model '_' effect{eff} '.txt'],'w');
     fprintf(fileID,'Model: %s\n',model);
@@ -71,6 +72,7 @@ for eff = 1:length(effect)
     elseif strcmp(effect,'spurInt')
         xlabel('\theta_{AB}','FontSize',10,'FontName','Helvetica')
     end
+    
     ylabel('Power','FontSize',10,'FontName','Helvetica')
     title('Gauss. errors','FontSize',11,'FontName','Helvetica','FontWeight','bold','FontAngle','italic')
     
@@ -111,6 +113,7 @@ for eff = 1:length(effect)
     title('Exp. errors','FontSize',11,'FontName','Helvetica','FontWeight' , 'bold','FontAngle','italic')
     
     if ~strcmp(effect{eff},'spurInt')
+
         hleg1 = legend('F-test','exact','raw','res');
     else
         hleg1 = legend('F-test','raw','res');
@@ -208,8 +211,8 @@ for eff = 1:length(effect)
     style = hgexport('factorystyle');
     style.Bounds = 'loose';
     hgexport(fig,'Figure.eps',style,'applystyle', true);
-    drawnow;
-    
+    drawnow;    
+
     print( ['indepAnov' model '_' effect{eff}], '-depsc', '-tiff')
     
     fclose(fileID);

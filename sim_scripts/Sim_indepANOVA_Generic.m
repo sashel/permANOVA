@@ -58,7 +58,7 @@ cfg_neighb.template  = 'CTF275_neighb.mat';
 neighbours       = ft_prepare_neighbours(cfg_neighb, data);
 
 %% loop across error types and permutation strategies
-for ee = 2:length(Error_List)
+for ee = 1:length(Error_List)
     figure
     hold on
     err_dist = Error_List{ee};
@@ -77,8 +77,8 @@ for ee = 2:length(Error_List)
             sc = [100000, 200, 100, 70, 50, 40, 30, 25, 20]*100;
         end
     end
-    
-    for mm = 1% 1:length(Method_List)
+
+    for mm = 1:length(Method_List)
         method = Method_List{mm};
         saveStr = [savePrefix,'_',err_dist,'_',method]; % append save string
         p_val = zeros(1,length(sc)); % permutation p-value across effect sizes
@@ -238,6 +238,7 @@ for ee = 2:length(Error_List)
         end
         title(method)
         cd(resDir)
+
         save(saveStr,'param','p_val*','A','B','sc','method','Rep')
         clear param p_val* c
     end
