@@ -1,5 +1,6 @@
 % Monte Carlo simulations dependent 2-way ANOVA
-% Params: fac, Rep, subjInt, subjInt_scale
+% Params: fac, Rep, int_flag, subjInt, subjInt_flag, subjInt_scale, pool_flag, ASblock_flag
+% Uses anova2rm_cell_mod and anova2rm_cell_mod_pool_df
 
 % stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR>';
 stemFolder = '/data/pt_np-helbling/permANOVA/';
@@ -10,16 +11,13 @@ if ~exist(resDir,'dir')
     mkdir(resDir);
 end
 
-fac = 'a'; % factor or interaction of interest: 'a' and 'iaxb' for main factor A and the interaction. 
+fac = 'iaxb'; % factor or interaction of interest: 'a' and 'iaxb' for main factor A and the interaction. 
               % Note: 'b' not tested here yet, as both are within-subject factors
-Rep = 5; % reduce number of repetitions REP when testing the code
-
-Int_flag = true; % Interaction between the two within factors?
-
+Rep = 1000; % reduce number of repetitions REP when testing the code
+int_flag = true; % Interaction between the two within factors?
 subjInt_flag = false; % Interaction between within factors and subjects?
-subjInt_scale = 100; % strength of interaction
-
-pool_flag = false;
+subjInt_scale = 50; % strength of interaction
+pool_flag = true;
 if pool_flag
     statfun = 'depAnova2way_pool_df';
 else
@@ -29,7 +27,6 @@ ASblock_flag = false;
 
 Method_List = {'ftest','exact','raw','res','totunres'}; % Note: not all tests are meaningful for each simulation. E.g. it doesn't make sense to calculate an exact test for the interaction. See 
 Error_List = {'exp','gauss'};
-
 
 %% construct save string prefix
 savePrefix = sprintf('2way_dep_%s_S',fac);
@@ -45,7 +42,7 @@ if pool_flag
     savePrefix = [savePrefix '_pool'];
 end
 
-if Int_flag
+if int_flag
     savePrefix = [savePrefix '_AB'];
 end
 
@@ -59,7 +56,7 @@ S = reshape(S,a,b,n);
 
 A = [50; 0; -50]; % see Anderson et al., 2001
 B = [50 -50 20 -20]; % 
-if Int_flag
+if int_flag
     Int = A*B;
 end
 A = reshape(repmat(A,b,n),a,b,n);
@@ -72,6 +69,7 @@ end
 
 %% build design matrix
 design = [repmat([1,2,3],1,b*n);repmat([1 1 1 2 2 2 3 3 3 4 4 4],1,n); [ones(1,a*b) ones(1,a*b)*2 ones(1,a*b)*3 ones(1,a*b)*4 ones(1,a*b)*5]];
+
 if ASblock_flag
     ASvar = zeros(1,size(design,2));
     for j = 1:n
@@ -86,8 +84,7 @@ if ASblock_flag
         for ii = 1:a
             rearrange = [rearrange, (a*b*(rr-1))+ii:a:a*b*rr];
         end
-    end
-    
+    end    
     design = design(:,rearrange);    
 end
 
@@ -118,17 +115,17 @@ for ee = 1:length(Error_List)
         
     figure
     hold on
-    for mm = 1:length(Method_List)
+    for mm = 4% 1:length(Method_List)
         fprintf('Stats: %s \n',Method_List{mm})
         method = Method_List{mm};
   
         saveStr = [savePrefix,'_',err_dist,'_',method];
         p_val = zeros(1,length(sc));
-        params = zeros(1,length(sc));
+        param = zeros(1,length(sc));
         
-        for r = 1:length(sc) % loop through increasing effect sizes
+        for r = 1:length(sc) % loop through increasing effect sizes           
             fprintf('Effect size %d out of %d \n',r,length(sc))
-            if strcmp(fac,'a')||(strcmp(fac,'iaxb')&&~Int_flag)
+            if strcmp(fac,'a')||(strcmp(fac,'iaxb')&&~int_flag)
                 % gradual increase of main factor
                 if r ==1
                     A = [0; 0;0];
@@ -138,17 +135,17 @@ for ee = 1:length(Error_List)
                 m_A = mean(A);
                 par = sqrt(sum(((A - m_A).^2)./a));
                 A = reshape(repmat(A,b,n),a,b,n);
-                if Int_flag
+                if int_flag
                     AB = A.*B;
                 end
                 if subjInt_flag
                     AS = A.*S/subjInt_scale;
-                    if Int_flag
+                    if int_flag
                         ABS = AB.*S/subjInt_scale;
                     end
                 end
                 
-            elseif strcmp(fac,'iaxb') && Int_flag
+            elseif strcmp(fac,'iaxb') && int_flag
                 % gradual increase of interaction factor
                 if r ==1
                     AB = zeros(size(Int));
@@ -162,11 +159,11 @@ for ee = 1:length(Error_List)
                     ABS = AB.*S/subjInt_scale;
                 end
             end
-            res = zeros(1,Rep);
             
+           res = zeros(1,Rep); 
            for j = 1:Rep % loop through repetitions
                 % put the model together & add errors
-                if Int_flag
+                if int_flag
                     y = S + A + B + AB;
                     if subjInt_flag
                         y = y + AS + BS + ABS; % add subject-interaction terms
@@ -186,8 +183,7 @@ for ee = 1:length(Error_List)
                 end
                 
                 switch method
-                    case 'ftest'
-                        
+                    case 'ftest'                      
                         % prepare data input for anova2rm_cell_mod*
                         % functions which are called here directly:
                         % 3 x 4 cell matrix, each containing 5 data points
@@ -249,12 +245,10 @@ for ee = 1:length(Error_List)
                         end
                         res(j) = stat.prob;
                         
-                    case 'res'
-                        
+                    case 'res'                       
                         c = reshape(y,1,a*b*n);
                         ncond_a = a;
-                        ncond_b = b;
-                            
+                        ncond_b = b;                           
    
                         for nfac_a = 1:ncond_a
                             for nfac_b = 1:ncond_b
@@ -265,21 +259,22 @@ for ee = 1:length(Error_List)
                         
                         if strcmp(fac,'a')||strcmp(fac,'iaxb')
                             for jj = 1:size(anovaIn,2)
-                                tmp = zeros(size(anovaIn{1,1}));
+                                tmp = zeros(length(anovaIn{1,1}),size(anovaIn,1));
                                 for ii = 1:size(anovaIn,1)
-                                    tmp(:,:,ii) = anovaIn{ii,jj};
+                                    tmp(:,ii) = anovaIn{ii,jj};
                                 end
                                 bmean(jj) = squeeze(mean(mean(tmp)));
                             end
                         end
                         
-                        if strcmp(fac,'b')||strcmp(fac,'iaxb')
-                            for jj = 1:size(anovaIn,2)
-                                tmp = zeros(size(anovaIn{1,1}));
-                                for ii = 1:size(anovaIn,1)
-                                    tmp(:,:,ii) = anovaIn{ii,jj};
+                        if strcmp(fac,'iaxb')
+                        %     if strcmp(fac,'b')||strcmp(fac,'iaxb')
+                            for ii = 1:size(anovaIn,1)
+                                tmp = zeros(length(anovaIn{1,1}),size(anovaIn,2));
+                                for jj = 1:size(anovaIn,2)
+                                    tmp(:,jj) = anovaIn{ii,jj};
                                 end
-                                amean(jj) = squeeze(mean(mean(tmp)));
+                                amean(ii) = squeeze(mean(mean(tmp)));
                             end
                         end
                         
@@ -292,20 +287,11 @@ for ee = 1:length(Error_List)
                             end
                         end
                         
-                         if strcmp(fac,'b')
-                            for ii = 1:size(anovaIn,1)
-                                for jj = 1:size(anovaIn,2)
-                                    idx_ab = design(1,:) == ii & design(2,:) == jj;
-                                    c_new(idx_ab) = c(idx_ab) - amean(ii); 
-                                end
-                            end
-                        end
-                        
                         if strcmp(fac,'iaxb')
                             for ii = 1:size(anovaIn,1)
-                                tmp = zeros(size(anovaIn{1,1}));
+                                tmp = zeros(length(anovaIn{1,1}),size(anovaIn,1),size(anovaIn,2));
                                 for jj = 1:size(anovaIn,2)
-                                    tmp(:,:,ii,jj) = anovaIn{ii,jj};
+                                    tmp(:,ii,jj) = anovaIn{ii,jj};
                                 end
                                 
                             end
@@ -314,8 +300,7 @@ for ee = 1:length(Error_List)
                             for ii = 1:size(anovaIn,1)
                                 for jj = 1:size(anovaIn,2)
                                     idx_ab = design(1,:) == ii & design(2,:) == jj;
-                                    c_new(idx_ab) = c(idx_ab) - bmean(jj) - amean(ii) + totmean;
-                                    
+                                    c_new(idx_ab) = c(idx_ab) - bmean(jj) - amean(ii) + totmean;                          
                                 end
                             end 
                         end
@@ -377,8 +362,7 @@ for ee = 1:length(Error_List)
         cd(resDir)
         save(saveStr,'param','p_val','S*','A*','B*','sc','method','res')
         clear param p_val c
-        cd(stemFolder)
-        
+        cd(stemFolder)      
     end
 end
 
