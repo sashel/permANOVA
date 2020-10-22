@@ -1,27 +1,26 @@
 % Generate power plots for the simulations 
-stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR';
+% stemFolder = '<INSERT_YOUR_OWN_WORKING_DIR';
 stemFolder = '/data/pt_np-helbling/permANOVA';
 
 resDir = [stemFolder '/SimData/ResultsDepANOVA/']; 
 
 cd(resDir)
 
-model = 'S'; % compare to savePrefix in Sim_depANOVA_Generic. Other examples 'S_subjInt_50' or 'S_subjInt_100_AS' etc.
-
-totunres_flag = 1; % plot power 
-
+model = 'S_subjInt_100_AS'; % compare to savePrefix in Sim_depANOVA_Generic. Other examples 'S_subjInt_50' or 'S_subjInt_100_AS' etc.
 effect = {'confMain'}; % 'mainInt', 'spurInt', 'confMain' or 'onlyMain'
+
+totunres_flag = 1; 
 
 % Un-comment the if clause below if you want to determine from the model string which effects
 % should be plotted. Obviously, you first need to run the respective
 % simulations
 
-% if strcmp(model,'S')||strcmp(model,'S_pool')||strcmp(model,'S_subjInt_50')||...
-%     strcmp(model,'S_subjInt_50_pool')||strcmp(model,'S_subjInt_100')||strcmp(model,'S_subjInt_100_pool')
-%     effect = {'mainInt','spurInt','confMain'}; 
-% elseif strcmp(model,'S_AS')||strcmp(model,'S_subjInt_50_AS')||strcmp(model,'S_subjInt_100_AS')
-%     effect = {'onlyMain','confMain'}; 
-% end
+if strcmp(model,'S')||strcmp(model,'S_pool')||strcmp(model,'S_subjInt_50')||...
+    strcmp(model,'S_subjInt_50_pool')||strcmp(model,'S_subjInt_100')||strcmp(model,'S_subjInt_100_pool')
+    effect = {'mainInt','spurInt','confMain'}; 
+elseif strcmp(model,'S_AS')||strcmp(model,'S_subjInt_50_AS')||strcmp(model,'S_subjInt_100_AS')
+    effect = {'onlyMain','confMain'}; 
+end
 
 
 for eff = 1:length(effect)
@@ -99,7 +98,7 @@ set(gca, ...
     'XMinorTick'  , 'off'      , ...
     'YMinorTick'  , 'off'      , ...
     'YGrid'       , 'off'      , ...
-    'YTick'       , [0.05 0.2:0.2:1], ...   %'YTickLabel'       , [], ...
+    'YTick'       , [0.05 0.2:0.2:1], ...   
     'LineWidth'   , 1         );
 box off
 xlim([min(param) max(param)])
