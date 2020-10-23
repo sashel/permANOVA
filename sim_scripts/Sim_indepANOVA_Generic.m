@@ -15,7 +15,7 @@ fac = 'iaxb'; % factor or interaction of interest: 'a' and 'iaxb' for main facto
 % Note: 'b' not tested yet, as 'a'and 'b' both are within-subject factors
 Rep = 1000; % reduce number of repetitions REP when testing the code
 int_flag = false; % Interaction between the two within factors?
-unbalanced_flag = false;
+unbalanced_flag = true;
 
 Method_List = {'ftest','exact','raw','res'}; % Note: not all tests are meaningful for each simulation. E.g. it doesn't make sense to calculate an exact test for the interaction. See
 % Method_List = {'ftest','raw','res'}; % Note: not all tests are meaningful for each simulation. E.g. it doesn't make sense to calculate an exact test for the interaction. See
