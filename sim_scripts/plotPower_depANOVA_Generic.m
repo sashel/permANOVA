@@ -53,6 +53,7 @@ elseif strcmp(effect{eff},'confMain')
 elseif strcmp(effect{eff},'spurInt')
     model_str = ['iaxb_' model];
 end
+
 subplot(nmb_rows,2,1)
 hold on
 cd(resDir)
