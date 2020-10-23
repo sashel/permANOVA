@@ -5,8 +5,8 @@ resDir = [stemFolder '/SimData/ResultsIndepANOVA/'];
 
 cd(resDir)
 
-model = ''; % compare to savePrefix in Sim_indepANOVA_Generic. Can be '' or 'unbalanced'
-effect = {'mainInt', 'spurInt', 'confMain', 'onlyMain'}; % 'mainInt', 'spurInt', 'confMain' or 'onlyMain'
+model = '_unbalanced'; % compare to savePrefix in Sim_indepANOVA_Generic. Can be '' or '_unbalanced'
+effect = {'mainInt', 'spurInt', 'confMain'}; % 'mainInt', 'spurInt' or 'confMain'
 
 for eff = 1:length(effect)
     % set figure size and position
@@ -143,7 +143,7 @@ for eff = 1:length(effect)
     if strcmp(effect{eff},'mainInt')
         fprintf(fileID,'\nInteraction\n');
         cd(resDir)
-        model_str = ['iaxb_' model 'AB'];
+        model_str = ['iaxb' model '_AB'];
         subplot(nmb_rows,2,3)
         hold on
         load(['2way_indep_' model_str '_gauss_ftest.mat'])
