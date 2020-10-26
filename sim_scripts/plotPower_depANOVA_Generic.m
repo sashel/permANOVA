@@ -7,7 +7,7 @@ resDir = [stemFolder '/SimData/ResultsDepANOVA/'];
 cd(resDir)
 
 model = 'S_subjInt_100_AS'; % compare to savePrefix in Sim_depANOVA_Generic. Other examples 'S_subjInt_50' or 'S_subjInt_100_AS' etc.
-effect = {'confMain'}; % 'mainInt', 'spurInt', 'confMain' or 'onlyMain'
+% effect = {'confMain'}; % 'mainInt', 'spurInt', 'confMain' or 'onlyMain'
 
 totunres_flag = 1; 
 
@@ -90,6 +90,7 @@ if strcmp(effect{eff},'mainInt')||strcmp(effect{eff},'onlyMain')||strcmp(effect{
 elseif strcmp(effect,'spurInt')
     xlabel('\theta_{AB}','FontSize',10,'FontName','Helvetica')
 end
+ylabel('Power','FontSize',10,'FontName','Helvetica')
 title('Gauss. errors','FontSize',11,'FontName','Helvetica','FontWeight','bold','FontAngle','italic')
 
 set(gca, ...
@@ -144,7 +145,6 @@ end
 set(hleg1,'Location','SouthEast')
 set(hleg1,'FontName','Helvetica')
 set(hleg1,'FontSize',9)
-
 set(hleg1,'box','off')
 
 set(gca, ...
@@ -154,7 +154,7 @@ set(gca, ...
     'XMinorTick'  , 'off'      , ...
     'YMinorTick'  , 'off'      , ...
     'YGrid'       , 'off'      , ...
-    'YTick'       , [0.05 0.2:0.2:1], ...   %'YTickLabel'       , [], ...
+    'YTick'       , [0.05 0.2:0.2:1], ...   
     'YTickLabel'       , [], ...
     'LineWidth'   , 1         );
 box off
@@ -182,7 +182,7 @@ if strcmp(effect{eff},'mainInt')
         fprintf(fileID,'gauss totunres: %1.3f\n',p_val(1));
     end
     xlabel('\theta_{AB}','FontSize',10,'FontName','Helvetica')
-    
+    ylabel('Power','FontSize',10,'FontName','Helvetica')
     
     set(gca, ...
         'Box'         , 'off'     , ...
